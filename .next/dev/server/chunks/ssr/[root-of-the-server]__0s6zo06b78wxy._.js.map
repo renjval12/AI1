@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/rvalentine/Documents/GitHub/AI1/app/login/page.js"],"sourcesContent":["\nconst LoginPage = () => {\n  return (\n    <></>\n  )\n}\n\nexport default LoginPage"],"names":["LoginPage"],"mappings":";;;;;;AACA,MAAMA,YAAY;IAChB,qBACE;;;;;AAEJ;uCAEeA"}}]
-}

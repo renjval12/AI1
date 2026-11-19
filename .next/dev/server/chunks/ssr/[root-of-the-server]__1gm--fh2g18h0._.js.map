@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/rvalentine/Documents/GitHub/AI1/app/dashboard/settings/page.js"],"sourcesContent":["\nconst Settings = () => {\n  return (\n    <div>Settings</div>\n  )\n}\n\nexport default Settings"],"names":["Settings"],"mappings":";;;;;;AACA,MAAMA,WAAW;IACf,qBACE,8OAAC;kBAAI;;;;;;AAET;uCAEeA"}}]
-}

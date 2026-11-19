@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/rvalentine/Documents/GitHub/AI1/app/dashboard/page.js"],"sourcesContent":["import Link from 'next/link'\nimport React from 'react'\n\nconst Dashboard = () => {\n    return (\n        <>\n            <div>Test Dashboard</div>\n            <Link href=\"/dashboard/settings\">Settings</Link>\n        </>\n    )\n}\n\nexport default Dashboard"],"names":["Dashboard","href"],"mappings":";;;;;AAAA;AACA;;;;AAEA,MAAMA,YAAY;IACd,qBACI;;0BACI,8OAAC;0BAAI;;;;;;0BACL,8OAAC,0LAAI;gBAACC,MAAK;0BAAsB;;;;;;;;;;;;AAG7C;uCAEeD"}}]
-}

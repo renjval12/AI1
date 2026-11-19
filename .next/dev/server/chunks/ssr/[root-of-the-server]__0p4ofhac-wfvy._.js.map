@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/rvalentine/Documents/GitHub/AI1/app/page.tsx"],"sourcesContent":["import Link from \"next/link\";\n\nexport default function Page() {\n    return (\n        <div>\n            <Link href=\"/dashboard\">Dashboard</Link>\n        </div>\n    )\n}"],"names":["Page","href"],"mappings":";;;;;AAAA;;;AAEe,SAASA;IACpB,qBACI,8OAAC;kBACG,cAAA,8OAAC,0LAAI;YAACC,MAAK;sBAAa;;;;;;;;;;;AAGpC"}}]
-}
