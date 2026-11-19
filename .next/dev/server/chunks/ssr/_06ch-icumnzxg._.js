@@ -61,7 +61,7 @@ const AutocompleteWidget = ()=>{
                 text: query,
                 format: "json",
                 limit: "5",
-                apiKey: ("TURBOPACK compile-time value", "f163217a66044c26839d63ad46175698")
+                apiKey: ("TURBOPACK compile-time value", "dad111ae0f4140deaa5b7d85e2b0e8ba")
             });
             try {
                 const res = await fetch(`https://api.geoapify.com/v1/geocode/autocomplete?${params}`, {

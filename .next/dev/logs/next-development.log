@@ -1008,3 +1008,5 @@
 {"timestamp":"01:33:37.152","source":"Server","level":"LOG","message":"✓ Compiled in 148ms"}
 {"timestamp":"01:34:12.304","source":"Server","level":"LOG","message":"✓ Compiled in 12ms"}
 {"timestamp":"01:34:14.104","source":"Server","level":"LOG","message":"✓ Compiled in 9ms"}
+{"timestamp":"03:04:09.899","source":"Server","level":"LOG","message":"  Reload env: .env.local"}
+{"timestamp":"03:04:10.162","source":"Server","level":"LOG","message":"✓ Compiled in 198ms"}
