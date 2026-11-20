@@ -20,8 +20,9 @@ const otherFields = [
   { name: "country", label: "Country/Region" },
 ]
 
-const labelClass = "block mb-1 text-xs font-bold uppercase tracking-wide text-gray-700"
-const inputClass = "block w-full rounded bg-gray-200 px-4 py-3 text-gray-700 focus:bg-white focus:outline-none"
+// Shared styles from globals.css
+const labelClass = "label"
+const inputClass = "input"
 
 const AutocompleteWidget = () => {
   const [address, setAddress] = useState(emptyAddress)
@@ -82,7 +83,7 @@ const AutocompleteWidget = () => {
   }
 
   return (
-    <div className="w-full max-w-lg space-y-4">
+    <div className="w-full space-y-4">
       <div className="relative">
         <label htmlFor="address1" className={labelClass}>Address</label>
         <input
@@ -96,7 +97,7 @@ const AutocompleteWidget = () => {
           className={inputClass}
         />
         {suggestions.length > 0 && (
-          <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded border border-gray-200 bg-white shadow">
+          <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white text-gray-900 shadow-lg">
             {suggestions.map((result) => (
               <li key={result.place_id}>
                 <button
@@ -116,19 +117,21 @@ const AutocompleteWidget = () => {
         )}
       </div>
 
-      {otherFields.map(({ name, label }) => (
-        <div key={name}>
-          <label htmlFor={name} className={labelClass}>{label}</label>
-          <input
-            id={name}
-            name={name}
-            ref={name === "address2" ? address2Ref : undefined}
-            value={address[name]}
-            onChange={handleChange}
-            className={inputClass}
-          />
-        </div>
-      ))}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {otherFields.map(({ name, label }) => (
+          <div key={name} className={name === "address2" ? "sm:col-span-2" : undefined}>
+            <label htmlFor={name} className={labelClass}>{label}</label>
+            <input
+              id={name}
+              name={name}
+              ref={name === "address2" ? address2Ref : undefined}
+              value={address[name]}
+              onChange={handleChange}
+              className={inputClass}
+            />
+          </div>
+        ))}
+      </div>
 
      
     </div>

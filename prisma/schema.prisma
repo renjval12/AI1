@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// One state machine for users.kyc_status and kyc_applications.status.
+// "active" is only used on users (approved + accounts linked).
+enum KycStatus {
+  pending
+  needs_info
+  pending_vendor
+  in_review
+  error_retrying
+  approved
+  denied
+  active
+}
+
+// summary.outcome from Alloy
+enum AlloyOutcome {
+  Approved
+  Denied
+  ManualReview @map("Manual Review")
+}
+
+enum AccountType {
+  checking
+  savings
+  credit
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid // also sent as Alloy-External-Entity-ID
+  email        String    @unique // lowercase it in code before saving
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  dobEncrypted Bytes     // iv + ciphertext + tag, encrypted with piiDataKey
+  ssnLast4     String    @db.Char(4)
+  piiDataKey   Bytes     // KMS-wrapped data key; the plaintext key never touches the DB
+  kycStatus    KycStatus @default(pending)
+  approvedAt   DateTime?
+  reapplyAfter DateTime? // cooldown after a denial
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  addresses    Address[]
+  applications KycApplication[]
+  accounts     FinancialAccount[]
+
+  @@map("users")
+}
+
+model Address {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  isCurrent   Boolean  // the one sent to Alloy
+  line1       String
+  line2       String?
+  city        String
+  state       String   @db.Char(2)
+  postalCode  String
+  countryCode String   @default("US") @db.Char(2)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model KycApplication {
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid
+  status           KycStatus     @default(pending)
+  evaluationToken  String?       @unique // L-…, null until Alloy responds
+  entityToken      String?       // P-…
+  applicationToken String?
+  alloyStatusCode  Int?          // 201 / 202 / 200 / 206
+  outcome          AlloyOutcome?
+  outcomeReasons   String[]      @default([])
+  tags             String[]      @default([]) // audit only, never shown to the applicant
+  requiredFields   String[]      @default([]) // keys from Alloy's required list, no values
+  exitedEarly      Boolean       @default(false)
+  attemptCount     Int           @default(0)
+  lastErrorCode    String?
+  reviewStartedAt  DateTime?
+  slaDueAt         DateTime?
+  decidedAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id])
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([status, updatedAt]) // reconciler: "pending/in_review for > N hours"
+  @@map("kyc_applications")
+}
+
+model AlloyWebhookEvent {
+  id           String    @id @default(uuid()) @db.Uuid
+  requestToken String    @unique // duplicates are skipped
+  type         String    // e.g. create:reviews:is_entity
+  payload      Json      // raw body as received
+  receivedAt   DateTime  @default(now())
+  processedAt  DateTime? // set by the worker
+
+  @@map("alloy_webhook_events")
+}
+
+model Notification {
+  id            String    @id @default(uuid()) @db.Uuid
+  applicationId String    @db.Uuid
+  template      String    // e.g. "approved", "in_review"
+  sentAt        DateTime? // null = queued, not sent yet
+  createdAt     DateTime  @default(now())
+
+  application KycApplication @relation(fields: [applicationId], references: [id])
+
+  @@unique([applicationId, template]) // one email per application per template
+  @@map("notifications")
+}
+
+model FinancialAccount {
+  id             String      @id @default(uuid()) @db.Uuid
+  userId         String      @db.Uuid
+  type           AccountType
+  name           String
+  mask           String      @db.Char(4) // last 4 digits
+  balance        Decimal     @db.Decimal(14, 2)
+  plaidAccountId String?     @unique // null for canned seed data
+  createdAt      DateTime    @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("financial_accounts")
+}
+
+model Transaction {
+  id                 String   @id @default(uuid()) @db.Uuid
+  accountId          String   @db.Uuid
+  amount             Decimal  @db.Decimal(14, 2)
+  merchantName       String
+  category           String?
+  postedOn           DateTime @db.Date
+  pending            Boolean  @default(false)
+  plaidTransactionId String?  @unique
+  createdAt          DateTime @default(now())
+
+  account FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, postedOn])
+  @@map("transactions")
+}
+
+// No foreign keys on purpose, so audit rows outlive the records they describe.
+model AuditLog {
+  id            BigInt     @id @default(autoincrement())
+  userId        String?    @db.Uuid
+  applicationId String?    @db.Uuid
+  actor         String     // "api", "worker", "reconciler", or an analyst id
+  action        String     // e.g. "status_change", "review_decided"
+  fromStatus    KycStatus?
+  toStatus      KycStatus?
+  details       Json?      // never PII
+  createdAt     DateTime   @default(now())
+
+  @@index([applicationId, createdAt])
+  @@map("audit_log")
+}
